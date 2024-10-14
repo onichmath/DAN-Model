@@ -151,5 +151,13 @@ def main():
         #TODO:  Train and evaluate your DAN
         print("DAN model not implemented yet")
 
+    
+    elif args.model == "SUBWORDDAN":
+        #TODO:  Train and evaluate your DAN
+        print("SUBWORDDAN model not implemented yet")
+
+    else:
+        print("Model type not recognized.\nUse one of the following model types: BOW, DAN, SUBWORDDAN")
+
 if __name__ == "__main__":
     main()
