@@ -28,7 +28,6 @@ def main():
         # Train and evaluate NN2
         train_loader, test_loader = load_data(SentimentDatasetBOW, batch_size=32)
         start_time = time.time()
-        print(NN3BOW(input_size=512, hidden_size=100))
         print('\n2 layers:')
         nn2_train_accuracy, nn2_test_accuracy = experiment(NN2BOW(input_size=512, hidden_size=100), train_loader, test_loader)
 

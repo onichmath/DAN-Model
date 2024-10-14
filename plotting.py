@@ -2,25 +2,36 @@ import matplotlib.pyplot as plt
 
 
 def save_accuracies_plot(training_accuracies, testing_accuracies):
-    # Plot the training accuracy
-    plt.figure(figsize=(8, 6))
+    num_models = len(training_accuracies)
+    fig, axs = plt.subplots(1, 2, figsize=(15, 6))
+
+    # Training
+    axs[0].set_title(f"Training Accuracy for {num_models} Networks", fontsize=16)
+    axs[0].set_xlabel('Epochs', fontsize=14)
+    axs[0].set_ylabel('Accuracy', fontsize=14)
+    axs[0].grid()
+
     for model, accuracy in training_accuracies.items():
-        plt.plot(accuracy, label=f"{model} - Train")
+        axs[0].plot(accuracy, label=f"{model} - Train")
+    
+    axs[0].legend()
+    
+    # Testing 
+    axs[1].set_title(f"Dev Accuracy for {num_models} Networks", fontsize=16)
+    axs[1].set_xlabel('Epochs', fontsize=14)
+    axs[1].set_ylabel('Accuracy', fontsize=14)
+    axs[1].grid()
+
     for model, accuracy in testing_accuracies.items():
-        plt.plot(accuracy, label=f"{model} - Dev")
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.title(f"Accuracy for {len(training_accuracies)} Networks")
-    plt.legend()
-    plt.grid()
+        axs[1].plot(accuracy, label=f"{model} - Dev")
+    
+    axs[1].legend()
 
-    # Save the training accuracy figure
-    accuracy_file = 'accuracy.png'
+    accuracy_file = f'./images/accuracy_{num_models}_networks.png'
+    plt.tight_layout()
     plt.savefig(accuracy_file)
+    plt.close()
     print(f"\n\nAccuracy plot saved as {accuracy_file}")
-
-    # plt.show()
-
 
 def prev(nn2_train_accuracy, nn3_train_accuracy, nn2_test_accuracy, nn3_test_accuracy):
     # Plot the training accuracy
