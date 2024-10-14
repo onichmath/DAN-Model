@@ -4,17 +4,18 @@ Deep Averaging Networks (DAN) are a type of vector space neural network designed
 
 ## Usage 
 ### Installing Requirements 
-#### Create the virtual environment
-python -m venv venv
 
-#### Activate the virtual environment (Windows)
-venv\Scripts\activate
+#### Clone the Repository
+git clone git@github.com:onichmath/DAN-Model.git
 
-#### Activate the virtual environment (macOS/Linux)
-source venv/bin/activate
+#### Change Directory
+cd DAN-Model
 
 #### Install packages from requirements.txt
 pip install -r requirements.txt
+
+#### Run Model
+python main.py --model MODEL_NAME
 
 ### DAN Model
 ```
