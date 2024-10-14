@@ -12,15 +12,16 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from BOWmodels import SentimentDatasetBOW, NN2BOW, NN3BOW
 
-
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Training function
-def train_epoch(data_loader, model, loss_fn, optimizer):
+def train_epoch(data_loader, model, loss_fn, optimizer: torch.optim.Optimizer):
     size = len(data_loader.dataset)
     num_batches = len(data_loader)
     model.train()
     train_loss, correct = 0, 0
     for batch, (X, y) in enumerate(data_loader):
-        X = X.float()
+        X = X.float().to(device)
+        y = y.to(device)
 
         # Compute prediction error
         pred = model(X)
@@ -46,7 +47,8 @@ def eval_epoch(data_loader, model, loss_fn, optimizer):
     eval_loss = 0
     correct = 0
     for batch, (X, y) in enumerate(data_loader):
-        X = X.float()
+        X = X.float().to(device)
+        y = y.to(device)
 
         # Compute prediction error
         pred = model(X)
@@ -61,6 +63,7 @@ def eval_epoch(data_loader, model, loss_fn, optimizer):
 
 # Experiment function to run training and evaluation for multiple epochs
 def experiment(model, train_loader, test_loader):
+    model = model.to(device)
     loss_fn = nn.NLLLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
@@ -93,8 +96,8 @@ def main():
 
     train_data = SentimentDatasetBOW("data/train.txt")
     dev_data = SentimentDatasetBOW("data/dev.txt")
-    train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
-    test_loader = DataLoader(dev_data, batch_size=16, shuffle=False)
+    train_loader = DataLoader(train_data, batch_size=256, shuffle=True)
+    test_loader = DataLoader(dev_data, batch_size=256, shuffle=False)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
