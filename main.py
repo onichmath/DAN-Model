@@ -12,75 +12,7 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from BOWmodels import SentimentDatasetBOW, NN2BOW, NN3BOW
 from data_loader import load_data
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# Training function
-def train_epoch(data_loader, model, loss_fn, optimizer: torch.optim.Optimizer):
-    size = len(data_loader.dataset)
-    num_batches = len(data_loader)
-    model.train()
-    train_loss, correct = 0, 0
-    for batch, (X, y) in enumerate(data_loader):
-        X = X.float().to(device)
-        y = y.to(device)
-
-        # Compute prediction error
-        pred = model(X)
-        loss = loss_fn(pred, y)
-        train_loss += loss.item()
-        correct += (pred.argmax(1) == y).type(torch.float).sum().item()
-
-        # Backpropagation
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-    average_train_loss = train_loss / num_batches
-    accuracy = correct / size
-    return accuracy, average_train_loss
-
-
-# Evaluation function
-def eval_epoch(data_loader, model, loss_fn, optimizer):
-    size = len(data_loader.dataset)
-    num_batches = len(data_loader)
-    model.eval()
-    eval_loss = 0
-    correct = 0
-    for batch, (X, y) in enumerate(data_loader):
-        X = X.float().to(device)
-        y = y.to(device)
-
-        # Compute prediction error
-        pred = model(X)
-        loss = loss_fn(pred, y)
-        eval_loss += loss.item()
-        correct += (pred.argmax(1) == y).type(torch.float).sum().item()
-
-    average_eval_loss = eval_loss / num_batches
-    accuracy = correct / size
-    return accuracy, average_eval_loss
-
-
-# Experiment function to run training and evaluation for multiple epochs
-def experiment(model, train_loader, test_loader, loss_fn=nn.NLLLoss(), learning_rate=0.0001):
-    model = model.to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-
-    all_train_accuracy = []
-    all_test_accuracy = []
-    for epoch in range(100):
-        train_accuracy, train_loss = train_epoch(train_loader, model, loss_fn, optimizer)
-        all_train_accuracy.append(train_accuracy)
-
-        test_accuracy, test_loss = eval_epoch(test_loader, model, loss_fn, optimizer)
-        all_test_accuracy.append(test_accuracy)
-
-        if epoch % 10 == 9:
-            print(f'Epoch #{epoch + 1}: train accuracy {train_accuracy:.3f}, dev accuracy {test_accuracy:.3f}')
-    
-    return all_train_accuracy, all_test_accuracy
-
+from train_eval import experiment
 
 def main():
     # Set up argument parser
