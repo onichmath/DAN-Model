@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 
 
 def save_accuracies_plot(training_accuracies, testing_accuracies):
+    # Given dicts of training and testing accuracies, plots models against each other
     num_models = len(training_accuracies)
     fig, axs = plt.subplots(1, 2, figsize=(15, 6))
 

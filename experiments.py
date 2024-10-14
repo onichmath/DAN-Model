@@ -19,6 +19,7 @@ def BOW_experiment_optuna(device:torch.device):
     pass
 
 def BOW_experiment(device:torch.device):
+    # Tests the accuracy of the two-layer and three-layer BOW models
     train_loader, test_loader = load_data(SentimentDatasetBOW, batch_size=32)
 
     # Train and evaluate NN2

@@ -50,7 +50,7 @@ def eval_epoch(data_loader, model, loss_fn, optimizer, device):
 
 
 # Experiment function to run training and evaluation for multiple epochs
-def experiment(model, train_loader, test_loader, loss_fn=nn.NLLLoss(), learning_rate=0.0001, device=torch.device("cuda" if torch.cuda.is_available() else "cpu")):
+def experiment(device:torch.device, model:nn.Module, train_loader, test_loader, loss_fn=nn.NLLLoss(), learning_rate=0.0001):
     model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 

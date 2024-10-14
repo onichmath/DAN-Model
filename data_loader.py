@@ -2,7 +2,7 @@ import time
 from torch.utils.data import DataLoader
 
 def load_data(data_class, batch_size=32):
-    # Load dataset
+    # Load dataset using a given data class
     start_time = time.time()
 
     train_data = data_class("data/train.txt")
