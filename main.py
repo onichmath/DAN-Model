@@ -11,9 +11,7 @@ import argparse
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from BOWmodels import SentimentDatasetBOW, NN2BOW, NN3BOW
-from data_loader import load_data
-from train_eval import experiment
-from plotting import save_accuracies_plot
+from experiments import BOW_experiment
 
 def main():
     # Set up argument parser
@@ -25,26 +23,7 @@ def main():
 
     # Check if the model type is "BOW"
     if args.model == "BOW":
-        # Train and evaluate NN2
-        train_loader, test_loader = load_data(SentimentDatasetBOW, batch_size=32)
-        start_time = time.time()
-        print('\n2 layers:')
-        nn2_train_accuracy, nn2_test_accuracy = experiment(NN2BOW(input_size=512, hidden_size=100), train_loader, test_loader)
-
-        # Train and evaluate NN3
-        print('\n3 layers:')
-        nn3_train_accuracy, nn3_test_accuracy = experiment(NN3BOW(input_size=512, hidden_size=100), train_loader, test_loader)
-
-        training_accuracies = {
-                'NN2BOW': nn2_train_accuracy,
-                'NN3BOW': nn3_train_accuracy
-                }
-        testing_accuracies = {
-                'NN2BOW': nn2_test_accuracy,
-                'NN3BOW': nn3_test_accuracy
-                }
-        save_accuracies_plot(training_accuracies, testing_accuracies)
-
+        BOW_experiment()
     elif args.model == "DAN":
         #TODO:  Train and evaluate your DAN
         print("DAN model not implemented yet")
