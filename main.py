@@ -11,6 +11,7 @@ import argparse
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from BOWmodels import SentimentDatasetBOW, NN2BOW, NN3BOW
+from data_loader import load_data
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Training function
@@ -62,10 +63,9 @@ def eval_epoch(data_loader, model, loss_fn, optimizer):
 
 
 # Experiment function to run training and evaluation for multiple epochs
-def experiment(model, train_loader, test_loader):
+def experiment(model, train_loader, test_loader, loss_fn=nn.NLLLoss(), learning_rate=0.0001):
     model = model.to(device)
-    loss_fn = nn.NLLLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     all_train_accuracy = []
     all_test_accuracy = []
@@ -83,7 +83,6 @@ def experiment(model, train_loader, test_loader):
 
 
 def main():
-
     # Set up argument parser
     parser = argparse.ArgumentParser(description='Run model training based on specified model type')
     parser.add_argument('--model', type=str, required=True, help='Model type to train (e.g., BOW)')
@@ -91,22 +90,10 @@ def main():
     # Parse the command-line arguments
     args = parser.parse_args()
 
-    # Load dataset
-    start_time = time.time()
-
-    train_data = SentimentDatasetBOW("data/train.txt")
-    dev_data = SentimentDatasetBOW("data/dev.txt")
-    train_loader = DataLoader(train_data, batch_size=256, shuffle=True)
-    test_loader = DataLoader(dev_data, batch_size=256, shuffle=False)
-
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f"Data loaded in : {elapsed_time} seconds")
-
-
     # Check if the model type is "BOW"
     if args.model == "BOW":
         # Train and evaluate NN2
+        train_loader, test_loader = load_data(SentimentDatasetBOW, batch_size=32)
         start_time = time.time()
         print('\n2 layers:')
         nn2_train_accuracy, nn2_test_accuracy = experiment(NN2BOW(input_size=512, hidden_size=100), train_loader, test_loader)
