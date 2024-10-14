@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader
 from BOWmodels import SentimentDatasetBOW, NN2BOW, NN3BOW
 from data_loader import load_data
 from train_eval import experiment
+from plotting import save_accuracies_plot
 
 def main():
     # Set up argument parser
@@ -27,6 +28,7 @@ def main():
         # Train and evaluate NN2
         train_loader, test_loader = load_data(SentimentDatasetBOW, batch_size=32)
         start_time = time.time()
+        print(NN3BOW(input_size=512, hidden_size=100))
         print('\n2 layers:')
         nn2_train_accuracy, nn2_test_accuracy = experiment(NN2BOW(input_size=512, hidden_size=100), train_loader, test_loader)
 
@@ -34,37 +36,15 @@ def main():
         print('\n3 layers:')
         nn3_train_accuracy, nn3_test_accuracy = experiment(NN3BOW(input_size=512, hidden_size=100), train_loader, test_loader)
 
-        # Plot the training accuracy
-        plt.figure(figsize=(8, 6))
-        plt.plot(nn2_train_accuracy, label='2 layers')
-        plt.plot(nn3_train_accuracy, label='3 layers')
-        plt.xlabel('Epochs')
-        plt.ylabel('Training Accuracy')
-        plt.title('Training Accuracy for 2, 3 Layer Networks')
-        plt.legend()
-        plt.grid()
-
-        # Save the training accuracy figure
-        training_accuracy_file = 'train_accuracy.png'
-        plt.savefig(training_accuracy_file)
-        print(f"\n\nTraining accuracy plot saved as {training_accuracy_file}")
-
-        # Plot the testing accuracy
-        plt.figure(figsize=(8, 6))
-        plt.plot(nn2_test_accuracy, label='2 layers')
-        plt.plot(nn3_test_accuracy, label='3 layers')
-        plt.xlabel('Epochs')
-        plt.ylabel('Dev Accuracy')
-        plt.title('Dev Accuracy for 2 and 3 Layer Networks')
-        plt.legend()
-        plt.grid()
-
-        # Save the testing accuracy figure
-        testing_accuracy_file = 'dev_accuracy.png'
-        plt.savefig(testing_accuracy_file)
-        print(f"Dev accuracy plot saved as {testing_accuracy_file}\n\n")
-
-        # plt.show()
+        training_accuracies = {
+                'NN2BOW': nn2_train_accuracy,
+                'NN3BOW': nn3_train_accuracy
+                }
+        testing_accuracies = {
+                'NN2BOW': nn2_test_accuracy,
+                'NN3BOW': nn3_test_accuracy
+                }
+        save_accuracies_plot(training_accuracies, testing_accuracies)
 
     elif args.model == "DAN":
         #TODO:  Train and evaluate your DAN
