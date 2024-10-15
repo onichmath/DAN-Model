@@ -5,23 +5,37 @@ from train_eval import experiment
 from plotting import save_accuracies_plot
 import torch
 from BOWmodels import NN2BOW, NN3BOW
-from DANmodels import NN2DAN
+from DANmodels import NN2DAN, OptimalDAN
 import optuna
 
 def SUBWORDDAN_experiment(device:torch.device):
     pass
 
 def DAN_experiment(device:torch.device, glove_dims:int=300):
-
-    device = torch.device("cpu")
+    # device = torch.device("cpu")
     train_loader, test_loader, word_embeddings = load_data_DAN(batch_size=32, glove_dims=glove_dims)
-    danmodel = NN2DAN(word_embedding_layer=word_embeddings.get_initialized_embedding_layer(), hidden_size=100,)
+    basic_danmodel = NN2DAN(word_embedding_layer=word_embeddings.get_initialized_embedding_layer(), hidden_size=100,)
 
     start_time = time.time()
     print('\n2 layers:')
-    nn2_train_accuracy, nn2_test_accuracy = experiment(device, danmodel, train_loader, test_loader)
+    nn2_train_accuracy, nn2_test_accuracy = experiment(device, basic_danmodel, train_loader, test_loader)
+    # print(nn2_train_accuracy, nn2_test_accuracy)
+
+    optimal_danmodel = OptimalDAN(word_embedding_layer=word_embeddings.get_initialized_embedding_layer())
+    optdan_train_accuracy, optdan_test_accuracy = experiment(device, optimal_danmodel, train_loader, test_loader, learning_rate=0.001, weight_decay=1e-5)
     stop_time = time.time()
-    print(nn2_train_accuracy, nn2_test_accuracy)
+
+    training_accuracies = {
+            'NN2DAN': nn2_train_accuracy,
+            'OPTDAN': optdan_train_accuracy 
+            }
+    testing_accuracies = {
+            'NN2DAN': nn2_test_accuracy,
+            'OPTDAN': optdan_test_accuracy
+            }
+    save_accuracies_plot(training_accuracies, testing_accuracies)
+
+
 
 
 def DAN_experiment_optuna(device:torch.device):
