@@ -28,18 +28,16 @@ class SentimentDatasetDAN(Dataset):
         Sets UNK indices to 1, as done in read_word_embeddings
         Sets padding indices to 0, as done in read_word_embeddings
         """
-        # Precompute the word indices for each sentence
-        # Pad each sentence to the length of the longest sentence
         max_len = max(len(sent.split()) for sent in self.sentences)
         word_indices = []
         for sentence in self.sentences:
             indices = [self.embeddings.word_indexer.index_of(word) for word in sentence.split()]
             word_indices.append(indices)
 
-        # Pad sentences with 0 indices
         word_indices = torch.full((len(word_indices), max_len), fill_value=0, dtype=torch.int)
-        # Change -1 UNK indices to 1
+
         word_indices = torch.where(word_indices == -1, torch.tensor(1, dtype=torch.int), word_indices)
+
         return word_indices
 
     def __len__(self):
