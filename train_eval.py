@@ -8,7 +8,7 @@ def train_epoch(data_loader, model, loss_fn, optimizer: torch.optim.Optimizer, d
     model.train()
     train_loss, correct = 0, 0
     for batch, (X, y) in enumerate(data_loader):
-        X = X.float().to(device)
+        X = X.to(device)
         y = y.to(device)
 
         # Compute prediction error
@@ -35,7 +35,7 @@ def eval_epoch(data_loader, model, loss_fn, optimizer, device):
     eval_loss = 0
     correct = 0
     for batch, (X, y) in enumerate(data_loader):
-        X = X.float().to(device)
+        X = X.to(device)
         y = y.to(device)
 
         # Compute prediction error
@@ -50,8 +50,9 @@ def eval_epoch(data_loader, model, loss_fn, optimizer, device):
 
 
 # Experiment function to run training and evaluation for multiple epochs
-def experiment(device:torch.device, model:nn.Module, train_loader, test_loader, loss_fn=nn.NLLLoss(), learning_rate=0.0001):
+def experiment(device:torch.device, model:nn.Module, train_loader, test_loader, learning_rate=0.0001):
     model = model.to(device)
+    loss_fn = nn.NLLLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     all_train_accuracy = []
