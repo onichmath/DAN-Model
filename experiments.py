@@ -19,7 +19,6 @@ def DAN_experiment(device:torch.device, glove_dims:int=300):
     start_time = time.time()
     print('\n2 layers:')
     nn2_train_accuracy, nn2_test_accuracy = experiment(device, basic_danmodel, train_loader, test_loader)
-    # print(nn2_train_accuracy, nn2_test_accuracy)
 
     optimal_danmodel = OptimalDAN(word_embedding_layer=word_embeddings.get_initialized_embedding_layer())
     optdan_train_accuracy, optdan_test_accuracy = experiment(device, optimal_danmodel, train_loader, test_loader, learning_rate=0.001, weight_decay=1e-5)
