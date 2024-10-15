@@ -75,3 +75,31 @@ class NN2DAN(DANModel):
         x = self.log_softmax(x)
         return x
 
+class OptimalDAN(DANModel):
+    # Implements the best performing DAN model in the DAN paper:  https://people.cs.umass.edu/~miyyer/pubs/2015_acl_dan.pdf
+    def __init__(self, word_embedding_layer, hidden_size=300, dropout_prob=0.3):
+        super().__init__()
+        self.embedding = word_embedding_layer
+        self.fc1 = nn.Linear(self.embedding.embedding_dim, hidden_size)
+        self.fc2 = nn.Linear(hidden_size, hidden_size)
+        self.fc3 = nn.Linear(hidden_size, hidden_size)
+        self.fc4 = nn.Linear(hidden_size, 2)
+
+        self.dropout = nn.Dropout(dropout_prob)
+        self.log_softmax = nn.LogSoftmax(dim=1)
+
+    def forward(self, x):
+        x = self.embedding(x)
+        x = self.dropout(x)
+        x = self.mean_ignore_padding(x)
+
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = F.relu(self.fc2(x))
+        x = self.dropout(x)
+        x = F.relu(self.fc3(x))
+        x = self.dropout(x)
+
+        x = self.fc4(x)
+        x = self.log_softmax(x)
+        return x
