@@ -1,15 +1,16 @@
 import time
-from data_loader import load_data
+from data_loader import load_data_BOW, load_data_DAN
 from train_eval import experiment
 from plotting import save_accuracies_plot
 import torch
-from BOWmodels import SentimentDatasetBOW, NN2BOW, NN3BOW
+from BOWmodels import NN2BOW, NN3BOW
 import optuna
 
 def SUBWORDDAN_experiment(device:torch.device):
     pass
 
 def DAN_experiment(device:torch.device):
+    train_loader, test_loader = load_data_DAN(batch_size=32, glove_dims=300)
     pass
 
 def DAN_experiment_optuna(device:torch.device):
@@ -20,7 +21,7 @@ def BOW_experiment_optuna(device:torch.device):
 
 def BOW_experiment(device:torch.device):
     # Tests the accuracy of the two-layer and three-layer BOW models
-    train_loader, test_loader = load_data(SentimentDatasetBOW, batch_size=32)
+    train_loader, test_loader = load_data_BOW(batch_size=32)
 
     # Train and evaluate NN2
     start_time = time.time()
