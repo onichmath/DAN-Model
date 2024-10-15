@@ -1,4 +1,5 @@
 import torch
+from torch import nn
 from sentiment_data import read_sentiment_examples, read_word_embeddings
 from torch.utils.data import Dataset
 
@@ -25,4 +26,10 @@ class SentimentDatasetDAN(Dataset):
 
     def __getitem__(self, idx):
         # Return sete of word indices and labels for the given index
-        return self.embeddings[idx], self.labels[idx]
+        word_indices = [self.embeddings.word_indexer.index_of(word) for word in self.sentences[idx]]
+        return torch.tensor(word_indices), self.labels[idx]
+
+    def get_embedding_layer(self, frozen=True):
+        return self.embeddings.get_initialized_embedding_layer(frozen=frozen)
+
+
