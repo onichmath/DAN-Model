@@ -13,8 +13,9 @@ def SUBWORDDAN_experiment(device:torch.device):
 
 def DAN_experiment(device:torch.device, glove_dims:int=300):
 
-    train_loader, test_loader, word_embeddings = load_data_DAN(batch_size=32, glove_dims=300)
-    danmodel = NN2DAN(word_embedding_layer=word_embeddings.get_initialized_embedding_layer(), hidden_size=100,).to(device)
+    device = torch.device("cpu")
+    train_loader, test_loader, word_embeddings = load_data_DAN(batch_size=32, glove_dims=glove_dims)
+    danmodel = NN2DAN(word_embedding_layer=word_embeddings.get_initialized_embedding_layer(), hidden_size=100,)
 
     start_time = time.time()
     print('\n2 layers:')

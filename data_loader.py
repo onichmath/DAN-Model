@@ -41,8 +41,8 @@ def load_data_DAN(batch_size=32, glove_dims=300):
     train_data = SentimentDatasetDAN("data/train.txt", word_embeddings)
     test_data = SentimentDatasetDAN("data/dev.txt", word_embeddings)
 
-    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, collate_fn=padded_collate_fn)
-    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, collate_fn=padded_collate_fn)
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
