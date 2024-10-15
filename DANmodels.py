@@ -26,17 +26,31 @@ class SentimentDatasetDAN(Dataset):
 
     def __getitem__(self, idx):
         # Return sete of word indices and labels for the given index
-        word_indices = [self.embeddings.word_indexer.index_of(word) for word in self.sentences[idx]]
-        return torch.tensor(word_indices), self.labels[idx]
+        # Should -1 UNK indices be changed to 1?
+        # Get the sentence at the given index
+        sentence = self.sentences[idx]
+        word_indices = torch.tensor([
+            self.embeddings.word_indexer.index_of(word) for word in sentence.split()
+        ], dtype=torch.int)
+
+        word_indices = torch.where(word_indices == -1, torch.tensor(1, dtype=torch.int), word_indices)
+
+        label = self.labels[idx]
+        print(word_indices.dtype)
+
+        return word_indices, label
 
 class NN2DAN(nn.Module):
-    def __init__(self, input_size, hidden_size, word_embedding_layer):
+    def __init__(self, word_embedding_layer, hidden_size):
         super().__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.embedding = word_embedding_layer
+        self.fc1 = nn.Linear(self.embedding.embedding_dim, hidden_size)
         self.fc2 = nn.Linear(hidden_size, 2)
         self.log_softmax = nn.LogSoftmax(dim=1)
 
     def forward(self, x):
+        x = self.embedding(x)
+        x = torch.mean(x, dim=1)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         x = self.log_softmax(x)
