@@ -2,6 +2,7 @@ import time
 from torch.utils.data import DataLoader, Dataset
 from BOWmodels import SentimentDatasetBOW
 from DANmodels import SentimentDatasetDAN
+from sentiment_data import read_word_embeddings
 
 def load_data_BOW(batch_size=32):
     # Load dataset using a given data class
@@ -25,9 +26,10 @@ def load_data_DAN(batch_size=32, glove_dims=300):
         glove_file = "./data/glove.6B.300d-relativized.txt"
     else:
         raise ValueError("Invalid glove dimension")
+    word_embeddings = read_word_embeddings(glove_file)
 
-    train_data = SentimentDatasetDAN("data/train.txt", glove_file)
-    test_data = SentimentDatasetDAN("data/dev.txt", glove_file)
+    train_data = SentimentDatasetDAN("data/train.txt", word_embeddings)
+    test_data = SentimentDatasetDAN("data/dev.txt", word_embeddings)
 
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
@@ -35,4 +37,4 @@ def load_data_DAN(batch_size=32, glove_dims=300):
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f"DAN: Data loaded in : {elapsed_time} seconds")
-    return train_loader, test_loader
+    return train_loader, test_loader, word_embeddings
