@@ -1,8 +1,10 @@
-import time 
+import time
+import torch 
 from torch.utils.data import DataLoader, Dataset
 from BOWmodels import SentimentDatasetBOW
 from DANmodels import SentimentDatasetDAN
 from sentiment_data import read_word_embeddings
+from torch.nn.utils.rnn import pad_sequence
 
 def load_data_BOW(batch_size=32):
     # Load dataset using a given data class
@@ -18,6 +20,14 @@ def load_data_BOW(batch_size=32):
     print(f"BOW: Data loaded in : {elapsed_time} seconds")
     return train_loader, test_loader
 
+def padded_collate_fn(batch):
+    # Pads a batch of sequences to the same length
+    # Uses 0 as padding token, as done in read_word_embeddings
+    texts, labels = zip(*batch)
+    padded_texts = pad_sequence(texts, batch_first=True, padding_value=0)
+    labels = torch.tensor(labels, dtype=torch.long)
+    return padded_texts,  labels
+
 def load_data_DAN(batch_size=32, glove_dims=300):
     start_time = time.time()
     if glove_dims == 50:
@@ -31,8 +41,8 @@ def load_data_DAN(batch_size=32, glove_dims=300):
     train_data = SentimentDatasetDAN("data/train.txt", word_embeddings)
     test_data = SentimentDatasetDAN("data/dev.txt", word_embeddings)
 
-    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, collate_fn=padded_collate_fn)
+    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, collate_fn=padded_collate_fn)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
