@@ -1,4 +1,18 @@
 import matplotlib.pyplot as plt
+import json
+
+def save_accuracies(training_acc, testing_acc):
+    accuracies = {
+            'training': training_acc,
+            'testing': testing_acc
+    }
+    with open('acc.json', 'w') as f:
+        json.dump(accuracies, f)
+
+def load_accuracies(file_name):
+    with open(file_name, 'r') as f:
+        accuracies = json.load(f)
+    return accuracies['training'], accuracies['testing']
 
 
 def save_accuracies_plot(training_accuracies, testing_accuracies):
