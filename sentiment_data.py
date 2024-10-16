@@ -51,6 +51,9 @@ def read_sentiment_examples(infile: str) -> List[SentimentExample]:
                 # Slightly more robust to reading bad output than int(fields[0])
                 label = 0 if "0" in fields[0] else 1
                 sent = fields[1].lower()
+            # Multiple spaces -> Single Space, Remove punctuation
+            sent = re.sub(r'\s+', ' ', sent)
+            sent = re.sub(r'[^\w\s]', '', sent)
             tokenized_cleaned_sent = list(filter(lambda x: x != '', sent.rstrip().split(" ")))
             exs.append(SentimentExample(tokenized_cleaned_sent, label))
     f.close()
@@ -119,7 +122,7 @@ class WordEmbeddings:
     @staticmethod
     def get_randomly_initialized_embeddings(vocab, embed_dim):
         """
-        Creates a WordEmbeddings object with randomly initialized vectors for the given vocab. 
+        Creates a WordEmbeddings object with randomly initialized vectors for the given flattened vocab. 
         Sets PAD to position 0 and UNK to position 1.
         :param vocab: list of tokens to embed
         :param embed_dim: number of features per word
@@ -227,7 +230,7 @@ if __name__=="__main__":
     # relativize_sentiment_data()
     # exit()
     import sys
-    embs = read_word_embeddings("data/glove.6B.50d-relativized.txt")
+    embs = WordEmbeddings.read_word_embeddings("data/glove.6B.50d-relativized.txt")
     query_word_1 = sys.argv[1]
     query_word_2 = sys.argv[2]
     if embs.word_indexer.index_of(query_word_1) == -1:
