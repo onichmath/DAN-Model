@@ -16,11 +16,26 @@ class BPETokenizer():
         pass
 
     @staticmethod
-    def get_stats(ids):
+    def get_stats(ids) -> dict:
+        # Get frequency of pairs of ids
         counts = {}
         for pair in zip(ids, ids[1:]):
             counts[pair] = counts.get(pair, 0) + 1
         return counts
+
+    @staticmethod 
+    def merge(ids, pair, idx):
+        # In list of ids, replace all occurrences of pair with idx
+        new_ids = []
+        i = 0
+        while i < len(ids):
+            if i < len(ids) - 1 and (ids[i], ids[i+1]) == pair:
+                new_ids.append(idx)
+                i += 2
+            else:
+                new_ids.append(ids[i])
+                i += 1
+        return new_ids
 
     @staticmethod 
     def train_bpe(vocab_sizes=[1000, 5000, 10000, 20000, 50000, 100000]):
@@ -30,14 +45,15 @@ class BPETokenizer():
         text = [ex.words for ex in text]
         # Conver matrix of words to list of integers corresponding to words
         all_words = " ".join([" ".join(ex) for ex in text])
-        print(len(all_words))
         tokens = list(map(int, all_words.encode("utf-8")))
         print(len(tokens))
-        print(max(tokens))
         stats = BPETokenizer.get_stats(tokens)
-        print(stats)
-        stats = sorted(((v,k) for k,v in stats.items()), reverse=True)
-        print(stats)
+        top_pair = max(stats, key=stats.get)
+        tokens = BPETokenizer.merge(tokens, top_pair, 256)
+        print(len(tokens))
+        # print(stats)
+        # stats = sorted(((v,k) for k,v in stats.items()), reverse=True)
+        # print(stats)
 
 
         pass
