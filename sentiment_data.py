@@ -120,29 +120,25 @@ class WordEmbeddings:
             return self.vectors[self.word_indexer.index_of("UNK")]
 
     @staticmethod
-    def get_randomly_initialized_embeddings(embed_dim):
+    def get_randomly_initialized_embeddings(vocab, embed_dim):
         """
         Creates a WordEmbeddings object with randomly initialized vectors for the given flattened vocab. Uses relativized embeddings from glove file.
         Sets PAD to position 0 and UNK to position 1.
         :param vocab: list of tokens to embed
         :param embed_dim: number of features per word
         """
-        with open("data/glove.6B.50d-relativized.txt") as f:
-            word_indexer = Indexer()
-            vectors = []
-            word_indexer.add_and_get_index("PAD")
-            word_indexer.add_and_get_index("UNK")
-            # Create 0 vectors for PAD and UNK
-            vectors.append(np.zeros(embed_dim))
-            vectors.append(np.zeros(embed_dim))
-            vocab = set()
-            for line in f:
-                space_idx = line.find(' ')
-                word = line[:space_idx]
-                vocab.add(word)
-                word_indexer.add_and_get_index(word)
-                vectors.append(np.random.rand(embed_dim))
-
+        word_indexer = Indexer()
+        vectors = []
+        word_indexer.add_and_get_index("PAD")
+        word_indexer.add_and_get_index("UNK")
+        # Create 0 vectors for PAD and UNK
+        vectors.append(np.zeros(embed_dim))
+        vectors.append(np.zeros(embed_dim))
+        # Create random vectors for the rest
+        for token in vocab:
+            word_indexer.add_and_get_index(token)
+            vectors.append(np.random.rand(embed_dim))
+        print("Created " + repr(len(word_indexer)) + " randomly initialized vectors of size " + repr(vectors[0].shape[0]))
         return WordEmbeddings(word_indexer, np.array(vectors))
 
     @staticmethod

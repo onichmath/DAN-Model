@@ -48,7 +48,10 @@ class SentimentDatasetDAN(Dataset):
         return self.embeddings.get_initialized_embedding_layer(frozen=frozen)
 
     def _randomly_initialize_embeddings(self):
-        return WordEmbeddings.get_randomly_initialized_embeddings(np.unique(self.sentences).flatten(), self.embed_dim)
+        all_words = " ".join(self.sentences)
+        words = all_words.split()
+        unique_words = np.unique(words)
+        return WordEmbeddings.get_randomly_initialized_embeddings(unique_words, self.embed_dim)
 
     def _load_pretrained_embeddings(self):
         if self.embed_dim != 50 and self.embed_dim != 300:
@@ -71,7 +74,6 @@ class SentimentDatasetDAN(Dataset):
             indices += [0] * (max_len - len(indices))
             token_indices.append(indices)
 
-        print(token_indices)
         token_indices = torch.tensor(token_indices, dtype=torch.int)
         token_indices = torch.where(token_indices == -1, torch.tensor(1, dtype=torch.int), token_indices)
 
