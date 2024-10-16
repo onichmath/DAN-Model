@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 from torch.nn.modules.activation import F
-from torch.nn.utils.rnn import pad_sequence
 from sentiment_data import WordEmbeddings, read_sentiment_examples
 from torch.utils.data import Dataset
 import numpy as np
@@ -45,8 +44,11 @@ class SentimentDatasetDAN(Dataset):
                 self.embeddings = self._randomly_initialize_embeddings()
                 self.token_indices = self._precompute_padded_token_indices()
 
+    def get_embedding_layer(self, frozen=False):
+        return self.embeddings.get_initialized_embedding_layer(frozen=frozen)
+
     def _randomly_initialize_embeddings(self):
-        return WordEmbeddings.get_randomly_initialized_embeddings(np.unique(self.sentences), self.embed_dim)
+        return WordEmbeddings.get_randomly_initialized_embeddings(np.unique(self.sentences).flatten(), self.embed_dim)
 
     def _load_pretrained_embeddings(self):
         if self.embed_dim != 50 and self.embed_dim != 300:
@@ -68,6 +70,8 @@ class SentimentDatasetDAN(Dataset):
             indices = [self.embeddings.word_indexer.index_of(token) for token in sentence.split()]
             indices += [0] * (max_len - len(indices))
             token_indices.append(indices)
+
+        print(token_indices)
         token_indices = torch.tensor(token_indices, dtype=torch.int)
         token_indices = torch.where(token_indices == -1, torch.tensor(1, dtype=torch.int), token_indices)
 
