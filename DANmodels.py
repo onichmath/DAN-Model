@@ -32,17 +32,17 @@ class SentimentDatasetDAN(Dataset):
             if not word_embeddings:
                 raise ValueError("Need to pass in word embeddings for test set")
             self.embeddings = word_embeddings
-            self.word_indices = self._precompute_padded_word_indices()
+            self.token_indices = self._precompute_padded_token_indices()
         if train:
             if pretrained:
                 # Load pretrained model
                 self.embeddings = self._load_pretrained_embeddings(embed_dim)
-                self.word_indices = self._precompute_padded_word_indices()
+                self.token_indices = self._precompute_padded_token_indices()
             else:
                 if not train and not word_embeddings:
                     raise ValueError("Need to pass in word embeddings for non-pretrained model")
                 self.embeddings = word_embeddings
-                self.word_indices = self._precompute_padded_word_indices()
+                self.token_indices = self._precompute_padded_token_indices()
 
     def _load_pretrained_embeddings(self, embed_dim):
         if embed_dim != 50 and embed_dim != 300:
@@ -50,7 +50,7 @@ class SentimentDatasetDAN(Dataset):
         glove_file = f"./data/glove.6B.{embed_dim}d-relativized.txt"
         return WordEmbeddings.read_word_embeddings(glove_file)
 
-    def _precompute_padded_word_indices(self):
+    def _precompute_padded_token_indices(self):
         """
         Precompute the word indices for each sentence and pad each sentence to the length of the longest sentence
         Sets padding indices to 0, as done in read_word_embeddings
@@ -59,22 +59,22 @@ class SentimentDatasetDAN(Dataset):
         if not self.embeddings:
             raise ValueError("Need word embeddings to precompute word indices")
         max_len = max(len(sent.split()) for sent in self.sentences)
-        word_indices = []
+        token_indices = []
         for sentence in self.sentences:
-            indices = [self.embeddings.word_indexer.index_of(word) for word in sentence.split()]
+            indices = [self.embeddings.word_indexer.index_of(token) for token in sentence.split()]
             indices += [0] * (max_len - len(indices))
-            word_indices.append(indices)
-        word_indices = torch.tensor(word_indices, dtype=torch.int)
-        word_indices = torch.where(word_indices == -1, torch.tensor(1, dtype=torch.int), word_indices)
+            token_indices.append(indices)
+        token_indices = torch.tensor(token_indices, dtype=torch.int)
+        token_indices = torch.where(token_indices == -1, torch.tensor(1, dtype=torch.int), token_indices)
 
-        return word_indices
+        return token_indices
 
     def __len__(self):
         return len(self.examples)
 
     def __getitem__(self, idx):
         # Return sete of word indices and labels for the given index
-        return self.word_indices[idx], self.labels[idx]
+        return self.token_indices[idx], self.labels[idx]
 
 class DANModel(nn.Module):
     def __init__(self):
