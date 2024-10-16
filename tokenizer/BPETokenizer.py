@@ -48,18 +48,22 @@ class BPETokenizer():
 
         all_words = "".join(text)
         tokens = list(map(int, all_words.encode("utf-8")))
-        
         ids = list(tokens)
-        num_merges = 1000 - 256
-        merges = {}
 
-        for i in range(num_merges):
-            stats = BPETokenizer.get_stats(ids)
-            top_pair = max(stats, key=stats.get)
-            idx = 256 + i
-            ids = BPETokenizer.merge(ids, top_pair, idx)
-            print(len(ids))
-            merges[top_pair] = idx
+        for vocab_size in sorted(vocab_sizes):
+            print(f"Training BPE with vocab size {vocab_size}")
+            num_merges = vocab_size - 256
+            merges = {}
+
+            for i in range(num_merges):
+                stats = BPETokenizer.get_stats(ids)
+                top_pair = max(stats, key=stats.get)
+                idx = 256 + i
+                ids = BPETokenizer.merge(ids, top_pair, idx)
+                print(f"Pair: {top_pair} -> {idx} -> {len(ids)}")
+                merges[top_pair] = idx
+
+            print(f"Vocab size: {vocab_size} ids: {len(ids)}")
 
         print(len(ids))
         # print(stats)
