@@ -4,6 +4,7 @@ from torch.nn.modules.activation import F
 from torch.nn.utils.rnn import pad_sequence
 from sentiment_data import WordEmbeddings, read_sentiment_examples
 from torch.utils.data import Dataset
+import numpy as np
 
 
 # Dataset class for handling sentiment analysis data
@@ -36,18 +37,21 @@ class SentimentDatasetDAN(Dataset):
         if train:
             if pretrained:
                 # Load pretrained model
-                self.embeddings = self._load_pretrained_embeddings(embed_dim)
+                self.embeddings = self._load_pretrained_embeddings()
                 self.token_indices = self._precompute_padded_token_indices()
             else:
                 if not train and not word_embeddings:
                     raise ValueError("Need to pass in word embeddings for non-pretrained model")
-                self.embeddings = word_embeddings
+                self.embeddings = self._randomly_initialize_embeddings()
                 self.token_indices = self._precompute_padded_token_indices()
 
-    def _load_pretrained_embeddings(self, embed_dim):
-        if embed_dim != 50 and embed_dim != 300:
+    def _randomly_initialize_embeddings(self):
+        return WordEmbeddings.get_randomly_initialized_embeddings(np.unique(self.sentences), self.embed_dim)
+
+    def _load_pretrained_embeddings(self):
+        if self.embed_dim != 50 and self.embed_dim != 300:
             raise ValueError("Invalid glove dimension")
-        glove_file = f"./data/glove.6B.{embed_dim}d-relativized.txt"
+        glove_file = f"./data/glove.6B.{self.embed_dim}d-relativized.txt"
         return WordEmbeddings.read_word_embeddings(glove_file)
 
     def _precompute_padded_token_indices(self):
