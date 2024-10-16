@@ -2,26 +2,57 @@ import torch
 from torch import nn
 from torch.nn.modules.activation import F
 from torch.nn.utils.rnn import pad_sequence
-from sentiment_data import read_sentiment_examples, read_word_embeddings
+from sentiment_data import WordEmbeddings, read_sentiment_examples, read_word_embeddings
 from torch.utils.data import Dataset
 
 
 # Dataset class for handling sentiment analysis data
 class SentimentDatasetDAN(Dataset):
-    def __init__(self, infile, word_embeddings, train=True):
+    def __init__(self, infile, word_embeddings=None, vocab_size=15000, embed_dim=300, pretrained=True, tokenizer=None, train=True):
+        # Pass in vectorizer? tokenizer
+        # If pretraining ..;
         # Read the sentiment examples from the input file
+        self.embed_dim = embed_dim
+        self.vocab_size = vocab_size
+
         self.examples = read_sentiment_examples(infile)
-        
-        # Extract sentences and labels from the examples
         self.sentences = [" ".join(ex.words) for ex in self.examples]
         self.labels = [ex.label for ex in self.examples]
-
-        self.embeddings = word_embeddings
-        
-        # Convert labels to PyTorch tensors
         self.labels = torch.tensor(self.labels, dtype=torch.long)
 
-        self.word_indices = self._precompute_padded_word_indices()
+        if tokenizer:
+            if pretrained:
+                raise ValueError("Cannot pass in tokenizer for pretrained model")
+            self.tokenizer = tokenizer
+            self.sentences = [self.tokenizer.tokenize(sent) for sent in self.sentences]
+
+        if not train:
+            # If not training, set word embeddings
+            # Assumes word embeddings made in train set
+            if not word_embeddings:
+                raise ValueError("Need to pass in word embeddings for test set")
+            self.embeddings = word_embeddings
+            self.word_indices = self._precompute_padded_word_indices()
+        if train:
+            if pretrained:
+                # Load pretrained model
+                if embed_dim != 50 and embed_dim != 300:
+                    raise ValueError("Invalid glove dimension")
+                glove_file = f"./data/glove.6B.{embed_dim}d-relativized.txt"
+                word_embeddings = read_word_embeddings(glove_file)
+                self.embeddings = word_embeddings
+                self.word_indices = self._precompute_padded_word_indices()
+            else:
+                if not train and not word_embeddings:
+                    raise ValueError("Need to pass in word embeddings for non-pretrained model")
+                self.embeddings = word_embeddings
+                self.word_indices = self._precompute_padded_word_indices()
+
+    def load_pretrained_embeddings(self, embed_dim):
+        if embed_dim != 50 and embed_dim != 300:
+            raise ValueError("Invalid glove dimension")
+        glove_file = f"./data/glove.6B.{embed_dim}d-relativized.txt"
+        return read_word_embeddings(glove_file)
 
     def _precompute_padded_word_indices(self):
         """
@@ -29,6 +60,8 @@ class SentimentDatasetDAN(Dataset):
         Sets padding indices to 0, as done in read_word_embeddings
         """
         # UNK indices not set here, asssumed to be handled by embedding layer
+        if not self.embeddings:
+            raise ValueError("Need word embeddings to precompute word indices")
         max_len = max(len(sent.split()) for sent in self.sentences)
         word_indices = []
         for sentence in self.sentences:
