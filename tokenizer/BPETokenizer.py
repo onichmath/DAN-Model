@@ -15,6 +15,12 @@ class BPETokenizer():
         # Decode tokens using BPE
         pass
 
+    @staticmethod
+    def get_stats(ids):
+        counts = {}
+        for pair in zip(ids, ids[1:]):
+            counts[pair] = counts.get(pair, 0) + 1
+        return counts
 
     @staticmethod 
     def train_bpe(vocab_sizes=[1000, 5000, 10000, 20000, 50000, 100000]):
@@ -28,6 +34,10 @@ class BPETokenizer():
         tokens = list(map(int, all_words.encode("utf-8")))
         print(len(tokens))
         print(max(tokens))
+        stats = BPETokenizer.get_stats(tokens)
+        print(stats)
+        stats = sorted(((v,k) for k,v in stats.items()), reverse=True)
+        print(stats)
 
 
         pass
