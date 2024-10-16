@@ -94,7 +94,7 @@ class WordEmbeddings:
         self.word_indexer = word_indexer
         self.vectors = vectors
 
-    def get_initialized_embedding_layer(self, frozen=True):
+    def get_initialized_embedding_layer(self, frozen=False):
         """
         :param frozen: True if you want the embedding layer to stay frozen, false to fine-tune embeddings
         :return: torch.nn.Embedding layer you can use in your network
@@ -116,7 +116,26 @@ class WordEmbeddings:
         else:
             return self.vectors[self.word_indexer.index_of("UNK")]
 
-
+    @staticmethod
+    def get_randomly_initialized_embeddings(vocab, embed_dim):
+        """
+        Creates a WordEmbeddings object with randomly initialized vectors for the given vocab. 
+        Sets PAD to position 0 and UNK to position 1.
+        :param vocab: list of tokens to embed
+        :param embed_dim: number of features per word
+        """
+        word_indexer = Indexer()
+        vectors = []
+        word_indexer.add_and_get_index("PAD")
+        word_indexer.add_and_get_index("UNK")
+        # Create 0 vectors for PAD and UNK
+        vectors.append(np.zeros(embed_dim))
+        vectors.append(np.zeros(embed_dim))
+        # Create random vectors for the rest
+        for token in vocab:
+            word_indexer.add_and_get_index(token)
+            vectors.append(np.random.rand(embed_dim))
+        return WordEmbeddings(word_indexer, np.array(vectors))
 
     @staticmethod
     def read_word_embeddings(embeddings_file: str):
