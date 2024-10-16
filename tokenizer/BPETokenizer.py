@@ -1,5 +1,7 @@
 import os
 
+from sentiment_data import read_sentiment_examples
+
 class BPETokenizer():
     def __init__(self, vocab_len):
         # Read vocab file for given length if exists
@@ -13,12 +15,19 @@ class BPETokenizer():
         # Decode tokens using BPE
         pass
 
-    @staticmethod 
-    def train_bpe():
-        text_file = "./data/train.txt"
-        if not os.path.exists(text_file):
-            print("Training file not found")
-            return
 
-        vocab_sizes = [1000, 3000, 5000, 10000, 20000, 50000]
+    @staticmethod 
+    def train_bpe(vocab_sizes=[1000, 5000, 10000, 20000, 50000, 100000]):
+        # Read in labels, sentences
+        text = read_sentiment_examples("./data/train.txt")
+        # Convert to list of words
+        text = [ex.words for ex in text]
+        # Conver matrix of words to list of integers corresponding to words
+        all_words = " ".join([" ".join(ex) for ex in text])
+        print(len(all_words))
+        tokens = list(map(int, all_words.encode("utf-8")))
+        print(len(tokens))
+        print(max(tokens))
+
+
         pass
