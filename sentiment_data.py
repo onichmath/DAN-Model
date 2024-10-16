@@ -120,24 +120,29 @@ class WordEmbeddings:
             return self.vectors[self.word_indexer.index_of("UNK")]
 
     @staticmethod
-    def get_randomly_initialized_embeddings(vocab, embed_dim):
+    def get_randomly_initialized_embeddings(embed_dim):
         """
-        Creates a WordEmbeddings object with randomly initialized vectors for the given flattened vocab. 
+        Creates a WordEmbeddings object with randomly initialized vectors for the given flattened vocab. Uses relativized embeddings from glove file.
         Sets PAD to position 0 and UNK to position 1.
         :param vocab: list of tokens to embed
         :param embed_dim: number of features per word
         """
-        word_indexer = Indexer()
-        vectors = []
-        word_indexer.add_and_get_index("PAD")
-        word_indexer.add_and_get_index("UNK")
-        # Create 0 vectors for PAD and UNK
-        vectors.append(np.zeros(embed_dim))
-        vectors.append(np.zeros(embed_dim))
-        # Create random vectors for the rest
-        for token in vocab:
-            word_indexer.add_and_get_index(token)
-            vectors.append(np.random.rand(embed_dim))
+        with open("data/glove.6B.50d-relativized.txt") as f:
+            word_indexer = Indexer()
+            vectors = []
+            word_indexer.add_and_get_index("PAD")
+            word_indexer.add_and_get_index("UNK")
+            # Create 0 vectors for PAD and UNK
+            vectors.append(np.zeros(embed_dim))
+            vectors.append(np.zeros(embed_dim))
+            vocab = set()
+            for line in f:
+                space_idx = line.find(' ')
+                word = line[:space_idx]
+                vocab.add(word)
+                word_indexer.add_and_get_index(word)
+                vectors.append(np.random.rand(embed_dim))
+
         return WordEmbeddings(word_indexer, np.array(vectors))
 
     @staticmethod
@@ -149,28 +154,27 @@ class WordEmbeddings:
         :param embeddings_file: path to the file containing embeddings
         :return: WordEmbeddings object reflecting the words and their embeddings
         """
-        f = open(embeddings_file)
-        word_indexer = Indexer()
-        vectors = []
-        # Make position 0 a PAD token, which can be useful if you
-        word_indexer.add_and_get_index("PAD")
-        # Make position 1 the UNK token
-        word_indexer.add_and_get_index("UNK")
-        for line in f:
-            if line.strip() != "":
-                space_idx = line.find(' ')
-                word = line[:space_idx]
-                numbers = line[space_idx+1:]
-                float_numbers = [float(number_str) for number_str in numbers.split()]
-                vector = np.array(float_numbers)
-                word_indexer.add_and_get_index(word)
-                # Append the PAD and UNK vectors to start. Have to do this weirdly because we need to read the first line
-                # of the file to see what the embedding dim is
-                if len(vectors) == 0:
-                    vectors.append(np.zeros(vector.shape[0]))
-                    vectors.append(np.zeros(vector.shape[0]))
-                vectors.append(vector)
-        f.close()
+        with open(embeddings_file) as f:
+            word_indexer = Indexer()
+            vectors = []
+            # Make position 0 a PAD token, which can be useful if you
+            word_indexer.add_and_get_index("PAD")
+            # Make position 1 the UNK token
+            word_indexer.add_and_get_index("UNK")
+            for line in f:
+                if line.strip() != "":
+                    space_idx = line.find(' ')
+                    word = line[:space_idx]
+                    numbers = line[space_idx+1:]
+                    float_numbers = [float(number_str) for number_str in numbers.split()]
+                    vector = np.array(float_numbers)
+                    word_indexer.add_and_get_index(word)
+                    # Append the PAD and UNK vectors to start. Have to do this weirdly because we need to read the first line
+                    # of the file to see what the embedding dim is
+                    if len(vectors) == 0:
+                        vectors.append(np.zeros(vector.shape[0]))
+                        vectors.append(np.zeros(vector.shape[0]))
+                    vectors.append(vector)
         print("Read in " + repr(len(word_indexer)) + " vectors of size " + repr(vectors[0].shape[0]))
         # Turn vectors into a 2-D numpy array
         return WordEmbeddings(word_indexer, np.array(vectors))
