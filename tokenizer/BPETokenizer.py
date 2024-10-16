@@ -42,32 +42,12 @@ class BPETokenizer():
     def train_bpe(vocab_sizes=[1000, 5000, 10000, 20000, 50000, 100000]):
         # Read in labels, sentences
         text = read_sentiment_examples("./data/train.txt")
+        # Get list of words and add </w> to end of each word
         text = [sent.words for sent in text]
-        # Convert to list of words
-        characters = []
-        for sent in text:
-            for word in sent:
-                characters.extend(list(word))
-                # word = word + "</w>"
-                # characters.extend(char for char in word)
-                characters.append("</w>")
-                # characters.append("</w>")
-        print(characters[:500])
-        print(len(characters.encode("utf-8")))
-        for sent in text:
-            # sent.words = "</w>".join(sent.words)
-            # print(sent.words.split("</w>"))
-            exit()
-        # text = [word + "</w>" for sent in text for word in sent.words]
-        text = [char for word in text for char in word]
-        print(text[:10])
-        # Conver matrix of words to list of integers corresponding to words
-        # all_words = " ".join([" ".join(ex) for ex in text])
-        all_words = [list("")]
-        all_chars = ""
-        print(len(all_chars))
-        # tokens = list(map(int, all_words.encode("utf-8")))
-        exit()
+        text = [word + "</w>" for sent in text for word in sent]
+
+        all_words = "".join(text)
+        tokens = list(map(int, all_words.encode("utf-8")))
         
         ids = list(tokens)
         num_merges = 1000 - 256
