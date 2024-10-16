@@ -36,11 +36,11 @@ def padded_collate_fn(batch):
     labels = torch.tensor(labels, dtype=torch.long)
     return padded_texts,  labels
 
-def load_data_DAN(batch_size=32, embed_dims=300, use_bpe=False, use_pretrained=True):
+def load_data_DAN(batch_size=32, embed_dims=300, use_pretrained=True, vocab_size=15000, tokenizer=None):
     start_time = time.time()
 
-    train_data = SentimentDatasetDAN("data/train.txt", embed_dim=embed_dims, pretrained=use_pretrained, train=True)
-    test_data = SentimentDatasetDAN("data/dev.txt", word_embeddings=train_data.embeddings, train=False)
+    train_data = SentimentDatasetDAN("data/train.txt", embed_dim=embed_dims, pretrained=use_pretrained, train=True, vocab_size=vocab_size, tokenizer=tokenizer)
+    test_data = SentimentDatasetDAN("data/dev.txt", word_embeddings=train_data.embeddings, train=False, vocab_size=vocab_size, tokenizer=tokenizer)
 
     train_loader = DANDataLoader(train_data, batch_size=batch_size, shuffle=True)
     test_loader = DANDataLoader(test_data, batch_size=batch_size, shuffle=False)
