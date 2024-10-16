@@ -3,25 +3,36 @@ Deep Averaging Networks (DAN) are a type of vector space neural network designed
 [DAN Paper](https://people.cs.umass.edu/~miyyer/pubs/2015_acl_dan.pdf)
 
 ## Usage 
-### Installing Requirements 
+### Installation
 
 #### Clone the Repository
+```
 git clone git@github.com:onichmath/DAN-Model.git
-
+```
 #### Change Directory
+```
 cd DAN-Model
-
+```
 #### Install packages from requirements.txt
+```
 pip install -r requirements.txt
-
+```
 #### Run Model
+```
 python main.py --model MODEL_NAME
+```
 
 ### DAN Model
 ```
 python main.py --model DAN
 ```
+### Random DAN Model
+- The Random DAN model is a DAN model with randomly initialized word embeddings. 
+```
+python main.py --model RANDOMDAN
+```
 ### Subword DAN Model
+- Note that the Subword DAN models uses BPE embeddings trained on the train dataset.
 ```
 python main.py --model SUBWORDDAN
 ```
