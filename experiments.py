@@ -14,10 +14,26 @@ def SUBWORDDAN_experiment(device:torch.device):
     pass
 
 def RANDOMDAN_experiment(device:torch.device):
-    train_loader, test_loader = load_data_DAN(batch_size=256, use_pretrained=False)
+    train_loader, test_loader = load_data_DAN(batch_size=256, use_pretrained=False, embed_dims=50)
     basic_danmodel = NN2DAN(train_loader.get_embedding_layer(frozen=False), hidden_size=100,)
 
     nn2_train_accuracy, nn2_test_accuracy = experiment(device, basic_danmodel, train_loader, test_loader)
+    optimal_danmodel = OptimalDAN(word_embedding_layer=train_loader.get_embedding_layer(frozen=False))
+    optdan_train_accuracy, optdan_test_accuracy = experiment(device, optimal_danmodel, train_loader, test_loader, learning_rate=0.0001, weight_decay=1e-5)
+
+    # bow_train, bow_test = load_accuracies('bow_acc.json')
+
+    training_accuracies = {
+            'NN2RANDOMDAN': nn2_train_accuracy,
+            'OPTRANDOMDAN': optdan_train_accuracy 
+            }
+    testing_accuracies = {
+            'NN2RANDOMDAN': nn2_test_accuracy,
+            'OPTRANDOMDAN': optdan_test_accuracy
+            }
+    # training_accuracies.update(bow_train)
+    # testing_accuracies.update(bow_test)
+    save_accuracies_plot(training_accuracies, testing_accuracies)
 
 def DAN_experiment(device:torch.device, embed_dims:int=300):
     # device = torch.device("cpu")
