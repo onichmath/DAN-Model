@@ -1,4 +1,8 @@
+from collections import defaultdict
 import os
+import re
+
+from numpy._core.defchararray import join
 
 from sentiment_data import read_sentiment_examples
 
@@ -15,57 +19,104 @@ class BPETokenizer():
         # Decode tokens using BPE
         pass
 
-    @staticmethod
-    def get_stats(ids) -> dict:
-        # Get frequency of pairs of ids
-        counts = {}
-        for pair in zip(ids, ids[1:]):
-            counts[pair] = counts.get(pair, 0) + 1
-        return counts
+    # @staticmethod
+    # def get_stats(ids) -> dict:
+    #     # Get frequency of pairs of ids
+    #     counts = {}
+    #     for pair in zip(ids, ids[1:]):
+    #         counts[pair] = counts.get(pair, 0) + 1
+    #     return counts
+    #
+    # @staticmethod 
+    # def merge(ids, pair, idx):
+    #     # In list of ids, replace all occurrences of pair with idx
+    #     new_ids = []
+    #     i = 0
+    #     while i < len(ids):
+    #         # If match, replace with idx and skip next
+    #         if i < len(ids) - 1 and (ids[i], ids[i+1]) == pair:
+    #             new_ids.append(idx)
+    #             i += 2
+    #         else:
+    #             new_ids.append(ids[i])
+    #             i += 1
+    #     return new_ids
 
     @staticmethod 
-    def merge(ids, pair, idx):
-        # In list of ids, replace all occurrences of pair with idx
-        new_ids = []
-        i = 0
-        while i < len(ids):
-            # If match, replace with idx and skip next
-            if i < len(ids) - 1 and (ids[i], ids[i+1]) == pair:
-                new_ids.append(idx)
-                i += 2
-            else:
-                new_ids.append(ids[i])
-                i += 1
-        return new_ids
+    def split_sentence(sentence):
+        return [" ".join(word) + " </w>" for word in sentence] + ["</s>"]
+
+    @staticmethod
+    def get_stats(vocab):
+        pairs = defaultdict(int)
+        for word, freq in vocab.items():
+            symbols = word.split()
+            for i in range(len(symbols)-1):
+                pairs[symbols[i],symbols[i+1]] += freq
+        return pairs
+
+    @staticmethod
+    def merge_vocab(pair, v_in):
+        v_out = {}
+        bigram = re.escape(' '.join(pair))
+        p = re.compile(r'(?<!\S)' + bigram + r'(?!\S)')
+        for word in v_in:
+            w_out = p.sub(''.join(pair), word)
+            v_out[w_out] = v_in[word]
+        return v_out
+
 
     @staticmethod 
     def train_bpe(vocab_sizes=[1000, 5000, 10000, 20000, 50000, 100000]):
         # Read in labels, sentences
         text = read_sentiment_examples("./data/train.txt")
-        # Get list of words and add </w> to end of each word
+        # Get list of words
         text = [sent.words for sent in text]
-        text = [word + "</w>" for sent in text for word in sent]
+        text = [BPETokenizer.split_sentence(sent) for sent in text]
+        text = [word for sent in text for word in sent]
+        print(text[:10])
 
-        all_words = "".join(text)
-        tokens = list(map(int, all_words.encode("utf-8")))
-        ids = list(tokens)
+        # Build frequency dictionary
+        vocab = defaultdict(int)
+        for word in text:
+            vocab[word] += 1
 
-        for vocab_size in sorted(vocab_sizes):
-            print(f"Training BPE with vocab size {vocab_size}")
-            num_merges = vocab_size - 256
-            merges = {}
+        print(len(vocab))
+        # print(vocab)
+        num_merges = 10
 
-            for i in range(num_merges):
-                stats = BPETokenizer.get_stats(ids)
-                top_pair = max(stats, key=stats.get)
-                idx = 256 + i
-                ids = BPETokenizer.merge(ids, top_pair, idx)
-                print(f"Pair: {top_pair} -> {idx} -> {len(ids)}")
-                merges[top_pair] = idx
+        while len(vocab) > 1000:
+            pairs = BPETokenizer.get_stats(vocab)
+            if not pairs:
+                break
+            best = max(pairs, key=pairs.get)
+            vocab = BPETokenizer.merge_vocab(best, vocab)
+            print(len(vocab))
+            # print(best)
+        print(len(vocab))
+        # print(vocab)
 
-            print(f"Vocab size: {vocab_size} ids: {len(ids)}")
-
-        print(len(ids))
+        #
+        # all_words = "".join(text)
+        # tokens = list(map(int, all_words.encode("utf-8")))
+        # ids = list(tokens)
+        #
+        # for vocab_size in sorted(vocab_sizes):
+        #     print(f"Training BPE with vocab size {vocab_size}")
+        #     num_merges = vocab_size - 256
+        #     merges = {}
+        #
+        #     for i in range(num_merges):
+        #         stats = BPETokenizer.get_stats(ids)
+        #         top_pair = max(stats, key=stats.get)
+        #         idx = 256 + i
+        #         ids = BPETokenizer.merge(ids, top_pair, idx)
+        #         print(f"Pair: {top_pair} -> {idx} -> {len(ids)}")
+        #         merges[top_pair] = idx
+        #
+        #     print(f"Vocab size: {vocab_size} ids: {len(ids)}")
+        #
+        # print(len(ids))
         # print(stats)
         # stats = sorted(((v,k) for k,v in stats.items()), reverse=True)
         # print(stats)
