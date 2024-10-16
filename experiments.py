@@ -13,6 +13,12 @@ import optuna
 def SUBWORDDAN_experiment(device:torch.device):
     pass
 
+def RANDOMDAN_experiment(device:torch.device):
+    train_loader, test_loader = load_data_DAN(batch_size=256, use_pretrained=False)
+    basic_danmodel = NN2DAN(train_loader.get_embedding_layer(frozen=False), hidden_size=100,)
+
+    nn2_train_accuracy, nn2_test_accuracy = experiment(device, basic_danmodel, train_loader, test_loader)
+
 def DAN_experiment(device:torch.device, embed_dims:int=300):
     # device = torch.device("cpu")
     train_loader, test_loader = load_data_DAN(batch_size=256, embed_dims=embed_dims)
