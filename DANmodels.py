@@ -16,9 +16,7 @@ class SentimentDatasetDAN(Dataset):
         self.vocab_size = vocab_size
 
         self.examples = read_sentiment_examples(infile)
-        self.sentences = [" ".join(ex.words) for ex in self.examples]
-        # self.sentences = [ex.words for ex in self.examples]
-        print(self.sentences[0])
+        self.sentences = [ex.words for ex in self.examples]
         self.labels = torch.tensor([ex.label for ex in self.examples], dtype=torch.long)
 
         if tokenizer:
@@ -30,7 +28,6 @@ class SentimentDatasetDAN(Dataset):
                 raise ValueError("Cannot pass in tokenizer for pretrained model")
             self.tokenizer = tokenizer
             self.sentences = [self.tokenizer.encode(sent) for sent in self.sentences]
-            print(self.sentences[0])
         else:
             self.tokenizer = None
 
@@ -56,9 +53,8 @@ class SentimentDatasetDAN(Dataset):
         return self.embeddings.get_initialized_embedding_layer(frozen=frozen)
 
     def _randomly_initialize_embeddings(self):
-        all_words = " ".join(self.sentences)
-        words = all_words.split()
-        unique_words = np.unique(words)
+        all_words = [word for sent in self.sentences for word in sent]
+        unique_words = np.unique(all_words)
         return WordEmbeddings.get_randomly_initialized_embeddings(unique_words, self.embed_dim)
 
     def _load_pretrained_embeddings(self):
@@ -75,10 +71,10 @@ class SentimentDatasetDAN(Dataset):
         # UNK indices not set here, asssumed to be handled by embedding layer
         if not self.embeddings:
             raise ValueError("Need word embeddings to precompute word indices")
-        max_len = max(len(sent.split()) for sent in self.sentences)
+        max_len = max(len(sent) for sent in self.sentences)
         token_indices = []
         for sentence in self.sentences:
-            indices = [self.embeddings.word_indexer.index_of(token) for token in sentence.split()]
+            indices = [self.embeddings.word_indexer.index_of(token) for token in sentence]
             indices += [0] * (max_len - len(indices))
             token_indices.append(indices)
 
