@@ -12,12 +12,12 @@ import optuna
 def optuna_study():
     pruner = optuna.pruners.MedianPruner()
     study = optuna.create_study(
-            study_name="DAN_hyperparameter_tuning",
+            study_name="Study",
             storage="sqlite:///DAN_hyperparameter_tuning.db",
             load_if_exists=True,
             direction="maximize",
             pruner=pruner)
-    study.optimize(objective, n_trials=100)
+    study.optimize(objective, n_trials=1000)
 
 def SUBWORDDAN_experiment(device:torch.device, visual=False):
     tokenizer = BPETokenizer(vocab_size=10000)
@@ -36,7 +36,7 @@ def RANDOMDAN_experiment(device:torch.device):
     optdan_train_accuracy, optdan_test_accuracy = experiment(device, optimal_danmodel, train_loader, test_loader, learning_rate=0.0001, weight_decay=1e-5)
 
 def DAN_experiment(device:torch.device, embed_dims:int=300):
-    train_loader, test_loader = load_data_DAN(batch_size=256, embed_dims=embed_dims)
+    train_loader, test_loader = load_data_DAN(batch_size=256, embed_dims=embed_dims, use_pretrained=True)
     basic_danmodel = NN2DAN(train_loader.get_embedding_layer(frozen=False), hidden_size=100,)
 
     print('\n2 layers:')
