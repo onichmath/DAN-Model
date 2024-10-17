@@ -16,14 +16,22 @@ class BPETokenizer():
         end = time.time()
         print(f"Loaded BPE tokenizer with vocab size {vocab_size} in {end-start} seconds")
 
-    def encode(self, sentence):
+    def encode(self, sentence, merges):
         # Encode sentence using BPE
+        tokens = list(sentence.encode("utf-8"))
+
+        while True:
+            stats = self.get_stats(tokens)
+            # Use float inf as fallback when pair not in merges
+            pair = min(stats, key=lambda p: merges.get(p, float('inf')))
+
+            pass
         pass
 
     def decode(self, ids):
         # Decode tokens using BPE Vocab
         tokens = b"".join([self.vocab[i] for i in ids])
-        text = tokens.decode("utf-8")
+        text = tokens.decode("utf-8", errors="replace")
         return text
 
     def build_vocab(self, merges, base_vocab_size=256):
@@ -89,17 +97,17 @@ class BPETokenizer():
         merges = {}
         for vocab_size in sorted(vocab_sizes):
             print(f"Training BPE with vocab size {vocab_size}")
-            pairs = BPETokenizer.get_stats(ids)
+            stats = BPETokenizer.get_stats(ids)
             while len(merges) < vocab_size - base_vocab_size:
-                if not pairs:
+                if not stats:
                     break
                 new_vocab_size = len(merges) + base_vocab_size
-                top_pair = pairs.most_common(1)[0][0]
+                top_pair = stats.most_common(1)[0][0]
 
                 ids = BPETokenizer.merge(ids, top_pair, new_vocab_size)
                 merges[','.join(map(str,top_pair))] = new_vocab_size
 
-                pairs = BPETokenizer.get_stats(ids)
+                stats = BPETokenizer.get_stats(ids)
 
             print(f"Vocab size: {vocab_size} ids: {len(ids)} merges: {len(merges)}")
             with open(f"./tokenizer/bpe_{vocab_size}.json", "w") as f:
