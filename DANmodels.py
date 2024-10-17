@@ -1,3 +1,4 @@
+from time import time
 import torch
 from torch import nn
 from torch.nn.modules.activation import F
@@ -8,7 +9,7 @@ import numpy as np
 
 # Dataset class for handling sentiment analysis data
 class SentimentDatasetDAN(Dataset):
-    def __init__(self, infile, word_embeddings=None, vocab_size=10000, embed_dim=300, pretrained=True, tokenizer=None, train=True):
+    def __init__(self, infile, word_embeddings=None, vocab_size=10000, embed_dim=300, pretrained=False, tokenizer=None, train=True):
         # Pass in vectorizer? tokenizer
         # If pretraining ..;
         # Read the sentiment examples from the input file
@@ -16,6 +17,7 @@ class SentimentDatasetDAN(Dataset):
         self.vocab_size = vocab_size
 
         self.examples = read_sentiment_examples(infile)
+        # self.sentences = [" ".join(ex.words) for ex in self.examples]
         self.sentences = [ex.words for ex in self.examples]
         self.labels = torch.tensor([ex.label for ex in self.examples], dtype=torch.long)
 
@@ -23,11 +25,13 @@ class SentimentDatasetDAN(Dataset):
             # When tokenizing, need vocab from randomly init function
             # Might as well do both 
             # Or extract function to build vocab from sentences
-            print(True)
+            start = time()
             if pretrained:
                 raise ValueError("Cannot pass in tokenizer for pretrained model")
             self.tokenizer = tokenizer
             self.sentences = [self.tokenizer.encode(sent) for sent in self.sentences]
+            end = time()
+            print(f"Tokenization took {end - start} seconds")
         else:
             self.tokenizer = None
 
