@@ -20,11 +20,14 @@ class BPETokenizer():
         # Encode sentence using BPE
         pass
 
-    def decode(self, tokens):
-        # Decode tokens using BPE
-        pass
+    def decode(self, ids):
+        # Decode tokens using BPE Vocab
+        tokens = b"".join([self.vocab[i] for i in ids])
+        text = tokens.decode("utf-8")
+        return text
 
     def build_vocab(self, merges, base_vocab_size=256):
+        # Build vocab from merges
         vocab = {i: bytes([i]) for i in range(base_vocab_size)}
         for (p0, p1), i in merges.items():
             vocab[i] = vocab[p0] + vocab[p1]
