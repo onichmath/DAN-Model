@@ -3,20 +3,18 @@ import os
 import re
 import json
 from typing import Counter
-
-from numpy._core.defchararray import join
-
+import time
 from sentiment_data import read_sentiment_examples
 
 class BPETokenizer():
     def __init__(self, vocab_size):
+        start = time.time()
+        self.base_vocab_size = 256
         self.vocab_size = vocab_size
-        self.merges = self.load_merges(vocab_size)
-
-
-        # Read vocab file for given length if exists
-        pass
-
+        self.merges = self.load_merges(self.vocab_size)
+        self.vocab = self.build_vocab(self.merges, self.base_vocab_size)
+        end = time.time()
+        print(f"Loaded BPE tokenizer with vocab size {vocab_size} in {end-start} seconds")
 
     def encode(self, sentence):
         # Encode sentence using BPE
@@ -25,6 +23,12 @@ class BPETokenizer():
     def decode(self, tokens):
         # Decode tokens using BPE
         pass
+
+    def build_vocab(self, merges, base_vocab_size=256):
+        vocab = {i: bytes([i]) for i in range(base_vocab_size)}
+        for (p0, p1), i in merges.items():
+            vocab[i] = vocab[p0] + vocab[p1]
+        return vocab
 
     def load_merges(self, vocab_size):
         # Load merges from file
