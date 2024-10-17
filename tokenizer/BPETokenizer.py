@@ -1,6 +1,7 @@
 from collections import defaultdict
 import os
 import re
+import json
 
 from numpy._core.defchararray import join
 
@@ -59,24 +60,18 @@ class BPETokenizer():
         tokens = list(map(int, all_words.encode("utf-8")))
         ids = list(tokens)
 
+        idx = 256
+        merges = {}
         for vocab_size in sorted(vocab_sizes):
             print(f"Training BPE with vocab size {vocab_size}")
-            num_merges = vocab_size - 256
-            merges = {}
-
-            for i in range(num_merges):
+            while idx < vocab_size:
                 stats = BPETokenizer.get_stats(ids)
-                top_pair = max(stats, key=stats.get)
-                if not top_pair in stats:
+                if not stats:
                     break
-                idx = 256 + i
+                top_pair = max(stats, key=stats.get)
                 ids = BPETokenizer.merge(ids, top_pair, idx)
-                print(f"Pair: {top_pair} -> {idx} -> {len(ids)}")
-                merges[top_pair] = idx
-
-            print(f"Vocab size: {vocab_size} ids: {len(ids)}")
-
-        print(len(ids))
-
-
-        pass
+                merges[','.join(map(str,top_pair))] = idx
+                idx += 1
+            print(f"Vocab size: {vocab_size} ids: {len(ids)} merges: {len(merges)}")
+            with open(f"./tokenizer/bpe_{vocab_size}.json", "w") as f:
+                json.dump(merges, f)
