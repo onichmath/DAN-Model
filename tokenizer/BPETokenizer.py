@@ -18,6 +18,9 @@ class BPETokenizer():
 
     def encode(self, sentence):
         # Encode sentence using BPE
+        if "<s>" not in sentence[-1]:
+            sentence[-1] = sentence[-1] + "</s>"
+        sentence = " ".join(sentence)
         tokens = list(sentence.encode("utf-8"))
 
         while True:
