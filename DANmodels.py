@@ -9,12 +9,11 @@ import numpy as np
 
 # Dataset class for handling sentiment analysis data
 class SentimentDatasetDAN(Dataset):
-    def __init__(self, infile, word_embeddings=None, vocab_size=10000, embed_dim=300, pretrained=False, tokenizer=None, train=True):
+    def __init__(self, infile, word_embeddings=None, embed_dim=300, pretrained=False, tokenizer=None, train=True):
         # Pass in vectorizer? tokenizer
         # If pretraining ..;
         # Read the sentiment examples from the input file
         self.embed_dim = embed_dim
-        self.vocab_size = vocab_size
 
         self.examples = read_sentiment_examples(infile)
         # self.sentences = [" ".join(ex.words) for ex in self.examples]
@@ -22,9 +21,6 @@ class SentimentDatasetDAN(Dataset):
         self.labels = torch.tensor([ex.label for ex in self.examples], dtype=torch.long)
 
         if tokenizer:
-            # When tokenizing, need vocab from randomly init function
-            # Might as well do both 
-            # Or extract function to build vocab from sentences
             start = time()
             if pretrained:
                 raise ValueError("Cannot pass in tokenizer for pretrained model")
