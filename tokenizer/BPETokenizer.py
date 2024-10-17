@@ -12,21 +12,25 @@ class BPETokenizer():
         self.base_vocab_size = 256
         self.vocab_size = vocab_size
         self.merges = self.load_merges(self.vocab_size)
-        self.vocab = self.build_vocab(self.merges, self.base_vocab_size)
+        self.vocab = self.build_vocab()
         end = time.time()
         print(f"Loaded BPE tokenizer with vocab size {vocab_size} in {end-start} seconds")
 
-    def encode(self, sentence, merges):
+    def encode(self, sentence):
         # Encode sentence using BPE
         tokens = list(sentence.encode("utf-8"))
 
         while True:
             stats = self.get_stats(tokens)
+            if not stats:
+                break 
             # Use float inf as fallback when pair not in merges
-            pair = min(stats, key=lambda p: merges.get(p, float('inf')))
-
-            pass
-        pass
+            pair = min(stats, key=lambda p: self.merges.get(p, float('inf')))
+            if pair not in self.merges:
+                break # Nothing to merge
+            idx = self.merges[pair]
+            tokens = self.merge(tokens, pair, idx)
+        return tokens
 
     def decode(self, ids):
         # Decode tokens using BPE Vocab
@@ -34,10 +38,10 @@ class BPETokenizer():
         text = tokens.decode("utf-8", errors="replace")
         return text
 
-    def build_vocab(self, merges, base_vocab_size=256):
+    def build_vocab(self):
         # Build vocab from merges
-        vocab = {i: bytes([i]) for i in range(base_vocab_size)}
-        for (p0, p1), i in merges.items():
+        vocab = {i: bytes([i]) for i in range(self.base_vocab_size)}
+        for (p0, p1), i in self.merges.items():
             vocab[i] = vocab[p0] + vocab[p1]
         return vocab
 
