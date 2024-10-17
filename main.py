@@ -17,7 +17,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Set up argument parser
     parser = argparse.ArgumentParser(description='Run model training based on specified model type')
-    parser.add_argument('--model', type=str, required=True, help='Model type to train (e.g., BOW)')
+    parser.add_argument('--model', type=str, required=False, default="DAN", help='Model type to train (e.g., BOW)')
     parser.add_argument('--optuna', type=bool, required=False, default=False, help='Use Optuna for hyperparameter tuning')
 
     # Parse the command-line arguments
