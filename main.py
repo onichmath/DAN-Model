@@ -4,14 +4,14 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from sklearn.feature_extraction.text import CountVectorizer
-from Documents.College.CSE256.hw1.CSE256_PA1_FA24.experiments import DAN_experiment
 from sentiment_data import read_sentiment_examples
 from torch.utils.data import Dataset, DataLoader
 import time
 import argparse
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
-from experiments import BOW_experiment, BOW_experiment_optuna
+from experiments import BOW_experiment, DAN_experiment, DAN_experiment_optuna, RANDOMDAN_experiment, SUBWORDDAN_experiment
+from tokenizer.BPETokenizer import BPETokenizer
 
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -24,21 +24,19 @@ def main():
     args = parser.parse_args()
     # Check if the model type is "BOW"
     if args.optuna:
-        BOW_experiment_optuna(device)
         print("Optuna hyperparameter tuning not implemented")
         exit()
-
     if args.model == "BOW":
         BOW_experiment(device)
     elif args.model == "DAN":
-        #TODO:  Train and evaluate your DAN
         DAN_experiment(device)
-        print("DAN model not implemented yet")
-    
+    elif args.model == "RANDOMDAN":
+        RANDOMDAN_experiment(device)
     elif args.model == "SUBWORDDAN":
-        #TODO:  Train and evaluate your DAN
-        print("SUBWORDDAN model not implemented yet")
-
+        SUBWORDDAN_experiment(device)
+    elif args.model == "BPE":
+        # Train BPE tokenizer
+        BPETokenizer.train_bpe()
     else:
         print("Model type not recognized.\nUse one of the following model types: BOW, DAN, SUBWORDDAN")
 
