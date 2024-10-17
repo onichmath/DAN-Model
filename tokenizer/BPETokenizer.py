@@ -9,9 +9,14 @@ from numpy._core.defchararray import join
 from sentiment_data import read_sentiment_examples
 
 class BPETokenizer():
-    def __init__(self, vocab_len):
+    def __init__(self, vocab_size):
+        self.vocab_size = vocab_size
+        self.merges = self.load_merges(vocab_size)
+
+
         # Read vocab file for given length if exists
         pass
+
 
     def encode(self, sentence):
         # Encode sentence using BPE
@@ -20,6 +25,19 @@ class BPETokenizer():
     def decode(self, tokens):
         # Decode tokens using BPE
         pass
+
+    def load_merges(self, vocab_size):
+        # Load merges from file
+        if os.path.exists(f"./tokenizer/bpe_{vocab_size}.json"):
+            with open(f"./tokenizer/bpe_{vocab_size}.json", "r") as f:
+                merges = json.load(f)
+            merges = {tuple(map(int, key.split(','))): val for key, val in merges.items()}
+            return merges
+        else:
+            raise ValueError(f"""
+                             Could not find merges file for vocab size {vocab_size}.
+                             Please train BPE tokenizer with `python main.py --model BPE`
+                             """)
 
     @staticmethod
     def get_stats(ids) -> Counter:
