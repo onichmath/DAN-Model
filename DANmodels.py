@@ -8,7 +8,7 @@ import numpy as np
 
 # Dataset class for handling sentiment analysis data
 class SentimentDatasetDAN(Dataset):
-    def __init__(self, infile, word_embeddings=None, vocab_size=15000, embed_dim=300, pretrained=True, tokenizer=None, train=True):
+    def __init__(self, infile, word_embeddings=None, vocab_size=10000, embed_dim=300, pretrained=True, tokenizer=None, train=True):
         # Pass in vectorizer? tokenizer
         # If pretraining ..;
         # Read the sentiment examples from the input file
@@ -17,14 +17,22 @@ class SentimentDatasetDAN(Dataset):
 
         self.examples = read_sentiment_examples(infile)
         self.sentences = [" ".join(ex.words) for ex in self.examples]
-        self.labels = [ex.label for ex in self.examples]
-        self.labels = torch.tensor(self.labels, dtype=torch.long)
+        # self.sentences = [ex.words for ex in self.examples]
+        print(self.sentences[0])
+        self.labels = torch.tensor([ex.label for ex in self.examples], dtype=torch.long)
 
         if tokenizer:
+            # When tokenizing, need vocab from randomly init function
+            # Might as well do both 
+            # Or extract function to build vocab from sentences
+            print(True)
             if pretrained:
                 raise ValueError("Cannot pass in tokenizer for pretrained model")
             self.tokenizer = tokenizer
-            self.sentences = [self.tokenizer.tokenize(sent) for sent in self.sentences]
+            self.sentences = [self.tokenizer.encode(sent) for sent in self.sentences]
+            print(self.sentences[0])
+        else:
+            self.tokenizer = None
 
         if not train:
             # If not training, set word embeddings
