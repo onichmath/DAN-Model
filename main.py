@@ -1,16 +1,7 @@
 # models.py
-
 import torch
-from torch import nn
-import torch.nn.functional as F
-from sklearn.feature_extraction.text import CountVectorizer
-from sentiment_data import read_sentiment_examples
-from torch.utils.data import Dataset, DataLoader
-import time
 import argparse
-import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader
-from experiments import BOW_experiment, DAN_experiment, DAN_experiment_optuna, RANDOMDAN_experiment, SUBWORDDAN_experiment
+from experiments import BOW_experiment, DAN_experiment, RANDOMDAN_experiment, SUBWORDDAN_experiment, optuna_study
 from tokenizer.BPETokenizer import BPETokenizer
 
 def main():
@@ -24,7 +15,7 @@ def main():
     args = parser.parse_args()
     # Check if the model type is "BOW"
     if args.optuna:
-        print("Optuna hyperparameter tuning not implemented")
+        optuna_study()
         exit()
     if args.model == "BOW":
         BOW_experiment(device)
