@@ -1,33 +1,35 @@
-from DANmodels import NN2DAN, OptimalDAN
+from DANmodels import OptimalDAN
 from data_loader import load_data_DAN
 import torch
 from torch import nn
-import optuna
 from tokenizer.BPETokenizer import BPETokenizer
 
 def objective(trial):
+    """
+    An optuna trial objective 
+    """
     # An optuna trial objective 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    batch_size = trial.suggest_int("batch_size", 16, 256, step=16)
-    embed_dims = trial.suggest_int("embed_dims", 50, 500, step=50)
-    use_pretrained = trial.suggest_categorical("use_pretrained", [True, False])
-    tokenizer = trial.suggest_categorical("tokenizer", [None, 
-                                                        BPETokenizer(vocab_size=1000),
-                                                        BPETokenizer(vocab_size=5000),
-                                                        BPETokenizer(vocab_size=10000),
-                                                        BPETokenizer(vocab_size=20000),
-                                                        BPETokenizer(vocab_size=50000),
-                                                        BPETokenizer(vocab_size=100000)])
-    hidden_size = trial.suggest_int("hidden_size", 50, 500, step=50)
-    learning_rate = trial.suggest_float("learning_rate", 1e-6, 1e-3, log=True)
-    weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-3, log=True)
+    batch_size = trial.suggest_int("Batch Size", 32, 512, step=32)
+    embed_dims = trial.suggest_int("Embedding Dimensions", 32, 512, step=32)
+    hidden_size = trial.suggest_int("Hidden Size", 32, 512, step=32)
+    use_pretrained = False
+
+    tokenizer_size = trial.suggest_categorical("Tokenizer Vocab Size", [0, 1000, 5000, 10000, 20000, 50000])
+    tokenizer = None
+    if tokenizer_size > 0:
+        tokenizer = BPETokenizer(vocab_size=tokenizer_size)
+
+    learning_rate = trial.suggest_float("Learning Rate", 1e-6, 1e-2, log=True)
+    weight_decay = trial.suggest_float("Weight Decay", 1e-7, 1e-3, log=True)
 
     train_loader, test_loader = load_data_DAN(batch_size=batch_size, embed_dims=embed_dims, use_pretrained=use_pretrained, tokenizer=tokenizer)
 
-    model = trial.suggest_categorical("model", [
-        NN2DAN(train_loader.get_embedding_layer(frozen=False), hidden_size=hidden_size),
-        OptimalDAN(word_embedding_layer=train_loader.get_embedding_layer(frozen=False), hidden_size=hidden_size)])
+    n_layers = trial.suggest_int("Hidden Layers", 0, 4)
+    dropout_rate = trial.suggest_float("Dropout Rate", 0.0, 0.5)
+    model = OptimalDAN(word_embedding_layer=train_loader.get_embedding_layer(frozen=False), hidden_size=hidden_size, dropout_prob=dropout_rate, n_layers=n_layers)
+
     model = model.to(device)
     loss_fn = nn.NLLLoss()
 
@@ -35,6 +37,7 @@ def objective(trial):
 
     all_train_accuracy = []
     all_test_accuracy = []
+    print(trial.params)
     for epoch in range(100):
         train_accuracy, train_loss = train_epoch(train_loader, model, loss_fn, optimizer, device)
         all_train_accuracy.append(train_accuracy)
@@ -43,14 +46,18 @@ def objective(trial):
         all_test_accuracy.append(test_accuracy)
 
         if epoch % 10 == 9:
-            trial.report(test_accuracy, epoch)
-            if trial.should_prune():
-                raise optuna.TrialPruned()
+            print(f'Epoch #{epoch + 1}: train accuracy {train_accuracy:.3f}, dev accuracy {test_accuracy:.3f}')
+        trial.report(test_accuracy, epoch)
+        # if trial.should_prune():
+        #     raise optuna.TrialPruned()
     return max(all_test_accuracy) if all_test_accuracy else 0.0
 
 
 # Training function
 def train_epoch(data_loader, model, loss_fn, optimizer: torch.optim.Optimizer, device):
+    """
+    Train the model for one epoch
+    """
     size = len(data_loader.dataset)
     num_batches = len(data_loader)
     model.train()
@@ -77,6 +84,9 @@ def train_epoch(data_loader, model, loss_fn, optimizer: torch.optim.Optimizer, d
 
 # Evaluation function
 def eval_epoch(data_loader, model, loss_fn, optimizer, device):
+    """
+    Evaluate the model on the dev set
+    """
     size = len(data_loader.dataset)
     num_batches = len(data_loader)
     model.eval()
@@ -99,6 +109,9 @@ def eval_epoch(data_loader, model, loss_fn, optimizer, device):
 
 # Experiment function to run training and evaluation for multiple epochs
 def experiment(device:torch.device, model:nn.Module, train_loader, test_loader, learning_rate=0.0001, weight_decay=0.0):
+    """
+    Train and evaluate the model for multiple epochs
+    """
     model = model.to(device)
     loss_fn = nn.NLLLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
