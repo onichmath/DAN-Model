@@ -1,7 +1,7 @@
 import time
 from typing import cast
 import torch 
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from BOWmodels import SentimentDatasetBOW
 from DANmodels import SentimentDatasetDAN
 from torch.nn.utils.rnn import pad_sequence
@@ -15,7 +15,9 @@ class DANDataLoader(DataLoader):
         return dataset.get_embedding_layer(frozen=frozen)
 
 def load_data_BOW(batch_size=32):
-    # Load dataset using a given data class
+    """
+    Load data using the BOW class
+    """
     start_time = time.time()
 
     train_data = SentimentDatasetBOW("data/train.txt")
@@ -29,14 +31,19 @@ def load_data_BOW(batch_size=32):
     return train_loader, test_loader
 
 def padded_collate_fn(batch):
-    # Pads a batch of sequences to the same length
-    # Uses 0 as padding token, as done in read_word_embeddings
+    """
+    Unused
+    Pads a batch of sequences to the same length using 0
+    """
     texts, labels = zip(*batch)
     padded_texts = pad_sequence(texts, batch_first=True, padding_value=0)
     labels = torch.tensor(labels, dtype=torch.long)
     return padded_texts,  labels
 
-def load_data_DAN(batch_size=32, embed_dims=300, use_pretrained=True, tokenizer=None):
+def load_data_DAN(batch_size=32, embed_dims=300, use_pretrained=False, tokenizer=None):
+    """
+    Load data using the DAN class, and create a word embedding layer
+    """
     start_time = time.time()
 
     train_data = SentimentDatasetDAN("data/train.txt", embed_dim=embed_dims, pretrained=use_pretrained, train=True, tokenizer=tokenizer)
