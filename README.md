@@ -37,6 +37,11 @@ python main.py --model RANDOMDAN
 ```
 python main.py --model SUBWORDDAN
 ```
+#### View Previous Studies
+- You can view previous Optuna studies stored in the database.
+```
+optuna-dashboard sqlite:///DAN_hyperparameter_tuning.db
+```
 #### Optuna Study
 - The Optuna study is used to find the best hyperparameters for the DAN model.
 ```
