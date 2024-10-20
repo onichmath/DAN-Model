@@ -37,17 +37,18 @@ class SentimentDatasetDAN(Dataset):
             if not word_embeddings:
                 raise ValueError("Need to pass in word embeddings for test set")
             self.embeddings = word_embeddings
-            self.token_indices = self._precompute_padded_token_indices()
         if train:
             if pretrained:
                 # Load pretrained model
+                print("Loading pretrained embeddings")
                 self.embeddings = self._load_pretrained_embeddings()
-                self.token_indices = self._precompute_padded_token_indices()
             else:
                 if not train and not word_embeddings:
                     raise ValueError("Need to pass in word embeddings for non-pretrained model")
+                print("Randomly initializing embeddings")
                 self.embeddings = self._randomly_initialize_embeddings()
-                self.token_indices = self._precompute_padded_token_indices()
+        print("Precomputing padded token indices")
+        self.token_indices = self._precompute_padded_token_indices()
 
     def get_embedding_layer(self, frozen=False):
         """
