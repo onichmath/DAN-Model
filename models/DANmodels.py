@@ -19,8 +19,10 @@ class SentimentDatasetDAN(Dataset):
         # self.sentences = [" ".join(ex.words) for ex in self.examples]
         self.sentences = [ex.words for ex in self.examples]
         self.labels = torch.tensor([ex.label for ex in self.examples], dtype=torch.long)
+        self.train = "train" if train else "test"
 
         if tokenizer:
+            print(f"Tokenizing sentences in {self.train} dataset")
             start = time()
             if pretrained:
                 raise ValueError("Cannot pass in tokenizer for pretrained model")
@@ -40,14 +42,14 @@ class SentimentDatasetDAN(Dataset):
         if train:
             if pretrained:
                 # Load pretrained model
-                print("Loading pretrained embeddings")
+                print(f"Loading pretrained embeddings in {self.train} dataset")
                 self.embeddings = self._load_pretrained_embeddings()
             else:
                 if not train and not word_embeddings:
                     raise ValueError("Need to pass in word embeddings for non-pretrained model")
-                print("Randomly initializing embeddings")
+                print(f"Randomly initializing {self.train} embeddings")
                 self.embeddings = self._randomly_initialize_embeddings()
-        print("Precomputing padded token indices")
+        print(f"Precomputing padded token indices for {self.train} dataset")
         self.token_indices = self._precompute_padded_token_indices()
 
     def get_embedding_layer(self, frozen=False):
