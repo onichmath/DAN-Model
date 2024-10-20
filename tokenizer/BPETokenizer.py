@@ -1,10 +1,8 @@
-from collections import defaultdict
 import os
-import re
 import json
 from typing import Counter
 import time
-from sentiment_data import read_sentiment_examples
+from utils.sentiment_data import read_sentiment_examples
 
 class BPETokenizer():
     def __init__(self, vocab_size):
