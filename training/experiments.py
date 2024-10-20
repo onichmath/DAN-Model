@@ -25,11 +25,15 @@ def SUBWORDDAN_experiment(device:torch.device):
     """
     Tests the accuracy of the two-layer and three-layer DAN models with byte pair tokenized embeddings
     """
+    print(f"Loading tokenizer")
     tokenizer = BPETokenizer(vocab_size=10000)
+    print(f"Loading data")
     train_loader, test_loader = load_data_DAN(batch_size=256, use_pretrained=False, embed_dims=300, tokenizer=tokenizer)
     basic_danmodel = NN2DAN(train_loader.get_embedding_layer(frozen=False), hidden_size=100,)
+    print("Training NN2DAN for 100 epochs")
     nn2_train_accuracy, nn2_test_accuracy = experiment(device, basic_danmodel, train_loader, test_loader, learning_rate=0.0001, weight_decay=1e-5)
     optimal_danmodel = OptimalDAN(word_embedding_layer=train_loader.get_embedding_layer(frozen=False))
+    print("Training OptimalDAN for 100 epochs")
     optdan_train_accuracy, optdan_test_accuracy = experiment(device, optimal_danmodel, train_loader, test_loader, learning_rate=0.0001, weight_decay=1e-5)
 
     training_accuracies = {
@@ -46,11 +50,14 @@ def RANDOMDAN_experiment(device:torch.device):
     """
     Tests the accuracy of the two-layer and three-layer DAN models with randomly initialized embeddings
     """
+    print(f"Loading data")
     train_loader, test_loader = load_data_DAN(batch_size=256, use_pretrained=False, embed_dims=300)
     basic_danmodel = NN2DAN(train_loader.get_embedding_layer(frozen=False), hidden_size=100,)
 
+    print("Training NN2DAN for 100 epochs")
     nn2_train_accuracy, nn2_test_accuracy = experiment(device, basic_danmodel, train_loader, test_loader, learning_rate=0.0001, weight_decay=1e-5)
     optimal_danmodel = OptimalDAN(word_embedding_layer=train_loader.get_embedding_layer(frozen=False))
+    print("Training OptimalDAN for 100 epochs")
     optdan_train_accuracy, optdan_test_accuracy = experiment(device, optimal_danmodel, train_loader, test_loader, learning_rate=0.0001, weight_decay=1e-5)
     training_accuracies = {
             "NN2DAN": nn2_train_accuracy,
@@ -66,13 +73,15 @@ def DAN_experiment(device:torch.device, embed_dims:int=300):
     """
     Tests the accuracy of the two-layer and three-layer DAN models with pretrained embeddings
     """
+    print(f"Loading data")
     train_loader, test_loader = load_data_DAN(batch_size=256, embed_dims=embed_dims, use_pretrained=True)
     basic_danmodel = NN2DAN(train_loader.get_embedding_layer(frozen=False), hidden_size=100,)
 
-    print('\n2 layers:')
+    print("Training NN2DAN for 100 epochs")
     nn2_train_accuracy, nn2_test_accuracy = experiment(device, basic_danmodel, train_loader, test_loader, learning_rate=0.0001, weight_decay=1e-5)
 
     optimal_danmodel = OptimalDAN(word_embedding_layer=train_loader.get_embedding_layer(frozen=False))
+    print("Training OptimalDAN for 100 epochs")
     optdan_train_accuracy, optdan_test_accuracy = experiment(device, optimal_danmodel, train_loader, test_loader, learning_rate=0.0001, weight_decay=1e-5)
 
     training_accuracies = {
