@@ -12,6 +12,14 @@ git clone git@github.com:onichmath/DAN-Model.git
 ```
 cd DAN-Model
 ```
+#### Create Virtual Environment
+```
+python -m venv venv
+```
+#### Activate Virtual Environment
+```
+source venv/bin/activate
+```
 #### Install packages from requirements.txt
 ```
 pip install -r requirements.txt
