@@ -50,14 +50,23 @@ class SentimentDatasetDAN(Dataset):
                 self.token_indices = self._precompute_padded_token_indices()
 
     def get_embedding_layer(self, frozen=False):
+        """
+        Get the embedding layer for the dataset
+        """
         return self.embeddings.get_initialized_embedding_layer(frozen=frozen)
 
     def _randomly_initialize_embeddings(self):
+        """
+        Randomly initializes embeddings for the tokens in the dataset
+        """
         all_words = [word for sent in self.sentences for word in sent]
         unique_words = np.unique(all_words)
         return WordEmbeddings.get_randomly_initialized_embeddings(unique_words, self.embed_dim)
 
     def _load_pretrained_embeddings(self):
+        """
+        Load pretrained glove embeddings from file
+        """
         if self.embed_dim != 50 and self.embed_dim != 300:
             raise ValueError("Invalid glove dimension")
         glove_file = f"./data/glove.6B.{self.embed_dim}d-relativized.txt"
@@ -68,7 +77,6 @@ class SentimentDatasetDAN(Dataset):
         Precompute the word indices for each sentence and pad each sentence to the length of the longest sentence
         Sets padding indices to 0, as done in read_word_embeddings
         """
-        # UNK indices not set here, asssumed to be handled by embedding layer
         if not self.embeddings:
             raise ValueError("Need word embeddings to precompute word indices")
         max_len = max(len(sent) for sent in self.sentences)
