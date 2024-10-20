@@ -1,7 +1,7 @@
 # models.py
 import torch
 import argparse
-from experiments import BOW_experiment, DAN_experiment, RANDOMDAN_experiment, SUBWORDDAN_experiment, optuna_study
+from training.experiments import BOW_experiment, DAN_experiment, RANDOMDAN_experiment, SUBWORDDAN_experiment, optuna_study
 from tokenizer.BPETokenizer import BPETokenizer
 
 def main():
